@@ -9,9 +9,9 @@ const params = new URLSearchParams(location.search);
 const DEBUG = params.has('debug');
 const FA = n => Number(n).toLocaleString('fa-IR');
 const $app = document.getElementById('app');
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const NL = s => { const m = /^(de|het) (.+)$/.exec(s); return m ? `<span class="art ${m[1]}">${m[1]}</span> ${esc(m[2])}` : esc(s); };
 const bare = s => s.replace(/^(de|het) /, '');
-const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.random() * (i + 1) | 0; [a[i], a[j]] = [a[j], a[i]]; } return a; };
 const pick = a => a[Math.random() * a.length | 0];
 
@@ -89,30 +89,30 @@ function home() {
   const learned = learnedIds().length, due = dueIds().length, hard = hardIds().length;
   const rec = S.placement && S.placement.level;
   screen(`
-    <div class="home-head"><div class="logo">۳۰۰۰ لغت هلندی<small>هلندی به فارسی</small></div>
-      <div class="streak" title="روزهای پشت سر هم">🔥 ${FA(streakNow())}</div></div>
+    <div class="home-head"><div class="logo">۳۰۰۰ لغت<small>هلندی به فارسی · Nederlands</small></div>
+      <div class="hd-r"><button class="inst pwa-install" data-install title="نصب اپ روی گوشی یا کامپیوتر">📲 نصب اپ</button><div class="streak" title="روزهای پشت سر هم">🔥 ${FA(streakNow())}</div></div></div>
     <div class="prog"><div class="row"><span>پیشرفت کل</span><b>${FA(learned)} / ${FA(TOTAL)} لغت</b></div>
       <div class="bar"><i style="width:${Math.max(learned / TOTAL * 100, learned ? 1 : 0)}%"></i></div></div>
     <div class="levels">${LEVELS.map(([lv, nm]) => { const L = LV[lv]; const n = L ? L.count : 0, done = L ? learnedIn(lv) : 0, ok = L && L.available;
       return `<button class="lvl ${lv} ${rec === lv ? 'rec' : ''} ${ok ? '' : 'soon'}" data-lv="${lv}">
         <div class="lt"><span class="code">${lv}</span><span class="nm">${nm}${rec === lv ? '<br>⭐ پیشنهاد' : ''}</span></div>
-        <div><div class="meta"><span>${ok ? FA(L.lessons.length) + ' درس' + (L.soon ? ' · ادامه به‌زودی' : '') : 'به‌زودی'}</span>${ok ? `<span>${FA(done)}/${FA(n)}</span>` : ''}</div>
+        <div><div class="meta"><span>${ok ? FA(L.lessons.length) + ' درس' : 'به‌زودی'}</span><span>${FA(done)}/${FA(n)}</span></div>
         <div class="bar"><i style="width:${n ? Math.max(done / n * 100, done ? 2 : 0) : 0}%"></i></div></div></button>`; }).join('')}</div>
     <div class="tools">
       <button class="tool ${due ? 'due' : ''}" id="tReview"><span class="badge">${FA(due)}</span><span class="ic">🔁</span><b>مرور امروز</b></button>
       <button class="tool" id="tHard"><span class="badge">${FA(hard)}</span><span class="ic">💪</span><b>لغت‌های سخت</b></button>
       <button class="tool" id="tQuick"><span class="ic">⚡</span><b>مرور ۶۰ ثانیه</b></button>
     </div>
-    <button class="place soon" id="tPlace" disabled>🎯 آزمون تعیین سطح · به‌زودی</button>
+    <button class="place" id="tPlace">🎯 آزمون تعیین سطح${rec ? ' · نتیجه: <span class="en">' + rec + '</span>' : ' (۲ دقیقه)'}</button>
     ${DEBUG ? `<div class="dbg"><button id="dDue">debug: due now</button><button id="dLearn">debug: learn A1-1..3</button><button id="dReset">debug: reset</button></div>` : ''}`);
   $app.querySelectorAll('.lvl').forEach(b => b.onclick = () => { const lv = b.dataset.lv; if (LV[lv] && LV[lv].available) levelScreen(lv); });
   document.getElementById('tReview').onclick = reviewScreen;
   document.getElementById('tHard').onclick = hardScreen;
   document.getElementById('tQuick').onclick = quickIntro;
-  
+  document.getElementById('tPlace').onclick = placementIntro;
   if (DEBUG) {
     document.getElementById('dDue').onclick = () => { learnedIds().forEach(id => { if (!S.words[id].mastered) S.words[id].due = Date.now() - 1000; }); save(); home(); };
-    document.getElementById('dLearn').onclick = () => { LV.A1.lessons.slice(0, 3).forEach((_, i) => finishLessonState(lessonObj('A1', i))); home(); };
+    document.getElementById('dLearn').onclick = () => { [0, 1, 2].forEach(i => finishLessonState(lessonObj('A1', i))); home(); };
     document.getElementById('dReset').onclick = () => { localStorage.removeItem(KEY); location.reload(); };
   }
 }
@@ -128,7 +128,7 @@ function levelScreen(lv, page) {
     const d = lessonDone(lv, i), u = unlocked(lv, i), c = i === cur;
     cells += `<button class="ls ${d ? 'done' : c ? 'cur' : u ? '' : 'lock'}" data-i="${i}" ${u ? '' : 'aria-disabled="true"'}>${d ? '✓' : u ? FA(i + 1) : '🔒'}<small>${d || !u ? 'درس ' + FA(i + 1) : c ? 'شروع' : ''}</small></button>`;
   }
-  for (let i = to; i < from + PER_PAGE; i++) cells += L.soon && page === pages - 1 ? '<span class="ls soon">⏳<small>به‌زودی</small></span>' : '<span></span>';
+  for (let i = to; i < from + PER_PAGE; i++) cells += '<span></span>';
   screen(`<div class="top"><button class="x" aria-label="بازگشت">✕</button><div class="h2">${tag(lv)} ${lvName(lv)}</div><span class="pill">${FA(Math.min(cur, n))}/${FA(n)} درس</span></div>
     <div class="lgrid">${cells}</div>
     <div class="pager"><button id="pPrev" ${page > 0 ? '' : 'disabled'}>›</button><span>صفحه ${FA(page + 1)} از ${FA(pages)}</span><button id="pNext" ${page < pages - 1 ? '' : 'disabled'}>‹</button></div>`);
@@ -361,8 +361,8 @@ function quickIntro() {
 const PQ = 8, PASS = 6;
 function placementIntro(first) {
   stopAudio();
-  screen(`<div class="top">${first ? '' : '<button class="x">✕</button>'}<div class="h2">🎯 آزمون تعیین سطح</div></div>
-    <div class="empty"><div class="big">🎯</div><div>${first ? 'خوش اومدی! 👋<br>' : ''}حدود ۲ دقیقه.<br>لغت انگلیسی میاد، معنی فارسی رو انتخاب کن.<br>از A1 شروع می‌شه و اگه خوب جواب بدی، می‌ره سطح بالاتر.</div></div>
+  screen(`<div class="top">${first ? '' : '<button class="x">✕</button>'}<div class="h2">🎯 آزمون تعیین سطح</div>${first ? '<button class="inst pwa-install" data-install>📲 نصب اپ</button>' : ''}</div>
+    <div class="empty"><div class="big">🎯</div><div>${first ? 'خوش اومدی! 👋<br>' : ''}حدود ۲ دقیقه.<br>لغت هلندی میاد، معنی فارسی رو انتخاب کن.<br>از A1 شروع می‌شه و اگه خوب جواب بدی، می‌ره سطح بالاتر.</div></div>
     <div class="btns"><button class="btn" id="go">شروع آزمون</button><button class="btn ghost" id="skip">${first ? 'رد کردن، خودم سطح رو انتخاب می‌کنم' : 'بازگشت'}</button></div>`);
   bindX(home);
   document.getElementById('skip').onclick = () => { S.onboarded = true; save(); home(); };
@@ -402,11 +402,11 @@ window.__app = { get S() { return S; }, W, LV, home, DEBUG, levelScreen, lessonO
   quizFor: (id, type) => { let n = 0; runQuiz({ mode: 'lesson', targets: [id], need: 1, pool: LV[W[id].level].lessons[W[id].li], next: () => n++ ? null : { id, type }, onDone: () => {} }); stopAudio(); clearTimers(); } };
 fetch('data/index.json').then(r => r.json()).then(ix => {
   TOTAL = ix.total;
-  ix.levels.forEach(l => LV[l.id] = { id: l.id, count: l.count, available: false, soon: !!l.soon, lessons: [] });
+  ix.levels.forEach(l => LV[l.id] = { id: l.id, count: l.count, available: false, lessons: [] });
   return Promise.all(ix.levels.filter(l => l.available).map(l => fetch('data/' + l.id + '.json?v=' + ix.version).then(r => r.json()).then(d => {
     const L = LV[l.id]; L.available = true; L.lessons = d.lessons.map((ls, li) => ls.map(([id, w, fa, ex, img]) => { W[id] = { id, w, fa, ex, img: !!img, level: l.id, li }; return id; }));
   })));
-}).then(() => { window.__app.ready = true; S.onboarded = true; save(); home(); })
+}).then(() => { window.__app.ready = true; if (!S.onboarded && !learnedIds().length) placementIntro(true); else { S.onboarded = true; save(); home(); } })
   .catch(e => { $app.innerHTML = '<div class="empty">خطا در بارگذاری. اینترنت رو چک کن و دوباره باز کن.</div>'; console.error(e); });
 if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js');
 })();

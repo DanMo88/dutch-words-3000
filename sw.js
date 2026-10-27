@@ -1,5 +1,5 @@
-const V = 'nl3000-v1'; const MEDIA = 'nl3000-media';
-const SHELL = ['./', 'index.html', 'style.css?v=1', 'app.js?v=1', 'manifest.webmanifest', 'data/index.json',
+const V = 'nl3000-v2'; const MEDIA = 'nl3000-media';
+const SHELL = ['./', 'index.html', 'style.css?v=2', 'app.js?v=2', 'install.js?v=1', 'manifest.webmanifest', 'data/index.json',
   'fonts/Vazirmatn-Regular.woff2', 'fonts/Vazirmatn-Bold.woff2', 'fonts/Vazirmatn-Black.woff2',
   'icons/icon-192.png', 'icons/icon-512.png', 'audio/sfx-correct.mp3', 'audio/sfx-wrong.mp3'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(V).then(c => c.addAll(SHELL)).then(() => self.skipWaiting())); });

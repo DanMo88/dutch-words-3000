@@ -143,3 +143,8 @@ button:active{transform:scale(.97)}
 .opt.ok .art,.opt.bad .art{color:inherit}
 .place.soon{opacity:.6}
 .ls.soon{opacity:.45;font-size:clamp(18px,3dvh,26px)}
+/* install app (PWA) */
+:root{--pwa-accent:#e8590c}
+.hd-r{display:flex;align-items:center;gap:2vw;flex:none}
+.inst{font:inherit;font-weight:700;font-size:clamp(12px,1.8dvh,16px);color:#fff;background:var(--pri);border:0;border-radius:99px;padding:.7dvh 3vw;box-shadow:0 3px 0 #9a3412;white-space:nowrap;cursor:pointer;flex:none}
+.top .inst{margin-inline-start:auto}
