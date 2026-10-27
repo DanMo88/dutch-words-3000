@@ -2,7 +2,7 @@
 'use strict';
 const fitFa = t => { const m = Math.max(...t.split(/[\s،؛]+/).map(x => x.replace(/\u200c/g, '').length)); return m > 7 ? ` style="font-size:min(var(--fs),${(130 / m).toFixed(1)}vw)"` : ''; };
 const fitO = t => t.length > 9 ? ` style="font-size:min(var(--fs),${(66 / t.length).toFixed(1)}vw)"` : '';
-const fitW = t => t.length > 8 ? ` style="font-size:min(var(--fs),${(128 / t.length).toFixed(1)}vw)"` : '';
+const fitW = t => { const n = t.length + 0.5 * (t.match(/[mwMW]/g) || []).length; return n > 8 ? ` style="font-size:min(var(--fs),${(128 / n).toFixed(1)}vw)"` : ''; };
 const DAY = 86400000, INTERVALS = [1, 3, 7, 21], NEED = 3, PER_PAGE = 20;
 const LEVELS = [['A1', 'مبتدی'], ['A2', 'پایه'], ['B1', 'متوسط'], ['B2', 'بالاتر از متوسط']];
 const params = new URLSearchParams(location.search);

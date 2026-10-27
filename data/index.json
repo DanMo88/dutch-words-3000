@@ -1,1 +1,1 @@
-{"version": 3, "total": 2970, "levels": [{"id": "A1", "count": 857, "available": true}, {"id": "A2", "count": 763, "available": true}, {"id": "B1", "count": 700, "available": false}, {"id": "B2", "count": 650, "available": false}]}
+{"version": 4, "total": 3014, "levels": [{"id": "A1", "count": 857, "available": true}, {"id": "A2", "count": 763, "available": true}, {"id": "B1", "count": 699, "available": true}, {"id": "B2", "count": 695, "available": false}]}
